@@ -1,179 +1,180 @@
 # s21_memory
 
-Разработать реализацию библиотеки по управлению памятью.
+Developing an implementation of the memory management library.  
+
+The russian version of the task can be found in the repository.
 
 
 ## Contents
 
 1. [Chapter I](#chapter-i) \
-    1.1. [Introduction](#introduction)
+    1.1. [Introduction](#introduction)
 2. [Chapter II](#chapter-ii) \
-    2.1. [Information](#information)
+    2.1. [Information](#information)
 3. [Chapter III](#chapter-iii) \
-    3.1. [Part 1](#part-1-реализация-библиотеки-s21_memory) \
-    3.2. [Part 2](#part-2-дополнительно-поиск-по-свободным-ячейкам) \
-    3.3. [Part 3](#part-3-дополнительно-дефрагментация)  
-
+    3.1. [Part 1](#part-1-implementation of the s21_memory-library) \
+    3.2. [Part 2](#part-2-bonus-search-by- free-cells) \
+    3.3. [Part 3](#part-3-bonus-defragmentation) 
 
 ## Chapter I
 
+There was only one thing left to do before being promoted to the position of a Middle Developer: to implement a small project that replicated the behavior of the standard memory library in the C language, so dearly loved by Eve. When Bob gave her the task, she couldn't believe her luck. She was familiar with malloc and free implementations since reading Kernighan and Ritchie's book. So no wonder Eve immediately rushed to her desk, even though she had plenty of time to do the task.
+
+Walking down the corridors of SIS Head Office, Eve couldn't help but note to herself that all departments were working hard and the company was vibrant. For example, the PR department in the meeting room was loudly developing an advertising strategy for the window-washing robot.  Another SIS innovation that must have had everyone lined up for it, from glass skyscraper owners to housewives who collect a line of smart helpers that are used, at best, a couple of times a year. The "freedom development" department, as it is called jokingly among the employees, has been actively working on the latest hinges that would improve durability. The finance department... monitored and multiplied the company's finances. The information security ran back and forth through the corridors and floors of the office. In the last few weeks the amount of their work has increased rapidly.
+
+Not far from the reception hung a myriad of diplomas and awards that the company's products had won: "Best Robot Vacuum Cleaner of the Year," or "Smartest Clothes Dryer," or simply "Refrigerator of the Year". SIS, which gained its popularity a couple of decades ago partly due to high-quality and cheap home appliances, today created everything you can possibly imagine, with the prefix "smart", which was unconditionally bought up by its loyal customer base. For young minds like Eve, SIS was an opportunity to become a skilled employee and gain invaluable experience, even though the company has changed a lot since its heyday.
+
+After leaning back in her chair and reflecting for a while, Eve came back to reality and moved quickly to the task.
+
 ## Introduction
 
-В данном проекте Вам предстоит познакомиться с алгоритмами выделения и освобождения памяти и написать свою реализацию функций *malloc*, *calloc*, *realloc* и *free*. 
+In this project you will learn the algorithms for allocating and freeing memory and write your own implementation of the *malloc*, *calloc*, *realloc* and *free* functions.
 
 
 ## Chapter II
 
 ## Information
 
-### Блоки памяти
+### Memory blocks
 
-Обычно в языках программирования более высокого уровня мы имеем дело с объектами, у которых есть структура, поля, методы и т.д.
+Usually in higher-level programming languages we deal with objects that have structure, fields, methods, etc.
 
-Однако с точки зрения распределителя памяти, который работает на более низком уровне, объект представляется просто как блок памяти.
-Известно только, что этот блок имеет определенный размер, а его содержимое, будучи непрозрачным, обрабатывается как просто последовательность байтов.
-Во время выполнения этот блок памяти может быть приведен к нужному типу, и его логическая компоновка может отличаться в зависимости от этого приведения.
+However, from a memory allocator perspective, which works at a lower level, an object is represented simply as a block of memory. All we know is that this block has a certain size, and its contents, being opaque, are treated as a raw sequence of bytes. At runtime this memory block can be casted to a needed type, and its logical layout may differ based on this casting.
 
-Выделение памяти всегда сопровождается выравниванием памяти и созданием заголовка объекта.
-В заголовке хранится метаинформация, относящаяся к каждому объекту, и которая служит целям распределителя и сборщика.
+Memory allocation is always accompanied by the memory alignment, and creation of an object header. The header stores meta-information related to each object, and which serves the purposes of an allocator, and collector.
 
-Блок памяти должен объединять заголовок объекта и фактический указатель полезной нагрузки, который указывает на адрес пользовательских данных.
-Этот указатель возвращается пользователю по запросу на выделение.
+The memory block will combine the object header, and the actual payload pointer, which points to the address of the user data. This pointer is returned to the user on allocation request.
 
-Заголовок отслеживает размер объекта и хранит флаг, выделен ли этот блок в данный момент.
-При выделении он устанавливается в значение `true`, а при операции освобождения сбрасывается обратно в значение `false`, поэтому блок может быть повторно использован в будущих запросах.
-Кроме того, в связанном списке всех доступных блоков есть поля, указывающие на следующий и предыдущий блоки.
+The header tracks the size of an object, and whether this block is currently allocated — the used flag. On allocation it’s set to `true`, and on the free operation it’s reset back to `false`, so can be reused in the future requests.
+In addition, the linked list of all available blocks has fields pointing to the next and previous blocks. 
 
-Вот изображение того, как блоки выглядят в памяти (в этом примере нет указателя на предыдущий блок):
+Here is a picture of how the blocks look in memory (but there is no pointer to the previous block):
 
 ![Memory_Blocks](misc/images/Memory_Blocks.png)
 
-Объекты A и C используются, а блок B в настоящее время не используется.
+The objects A, and C are in use, and the block B is currently not used.
 
-Поскольку это связанный список, должны быть переменные, отслеживающие начало и конец (верх) кучи.
+Since this is a linked list, there must be variables tracking the start and the end (the top) of the heap.
 
-### Выравнивание памяти
+### Memory alignment
 
-Как уже упоминалось, при выделении памяти мы не берем на себя никаких обязательств относительно логического расположения объектов, а вместо этого работаем с размером блока.
+As mentioned, when allocating a memory, we don’t make any commitment about the logical layout of the objects, and instead work with the size of the block.
 
-Для более быстрого доступа блок памяти должен быть выровнен, и обычно выравнивание производится по размеру машинного слова.
+For faster access, a memory block should be aligned, and usually by the size of the machine word.
 
-Вот изображение того, как выглядит выровненный блок с заголовком объекта:
+Here is the picture of how an aligned block with an object header looks like:
 
 ![Alignment-Header](misc/images/Alignment-Header.png)
 
-Это означает, что если пользователь запрашивает выделение, скажем, 6 байт, мы фактически выделяем 8 байт. Выделение 4 байт может привести либо к 4 байтам — на 32-разрядной архитектуре, либо к 8 байтам — на машине с 64-разрядной архитектурой.
+It means that if a user requests to allocate, say, 6 bytes, we actually allocate 8 bytes. Allocating 4 bytes can result either to 4 bytes — on 32-bit architecture, or to 8 bytes — on x64 machine.
 
-### Разделение блоков
+### Blocks splitting
 
-Простое использование блока подходящего размера может оказаться неэффективным в случае, если найденный блок намного больше запрошенного.
+Simply using a block of the appropriate size may not be effective if a found block is much larger than the requested one.
 
-Мы внедрим процедуру разделения большего свободного блока, взяв из него только фрагмент нужного размера. Другая часть остается свободной и может быть использована в дальнейших запросах на выделение.
+We will now implement a procedure of splitting a larger free block, taking from it only a smaller chunk, which is requested. The other part stays free, and can be used in further allocation requests.
 
-Вот пример:
+Here is an example:
 
 ![Block-split](misc/images/Block-split.png)
 
-### Объединение блоков
+### Blocks coalescing
 
-Если у нас в куче есть два соседних блока размером 8, и пользователь запрашивает блок размером 16, мы не можем удовлетворить запрос на выделение. Давайте взглянем на оптимизацию для этого.
+If we have two adjacent blocks in the heap of size 8, and a user requests a block of size 16, we can’t satisfy an allocation request. Let’s take a look at another optimization for that case.
 
-При освобождении объектов мы можем выполнить операцию, противоположную операции разделения, и объединить два (или более) соседних блока в один больший.
+On freeing the objects, we can do the opposite to splitting operation, and coalesce two (or more) adjacent blocks to a larger one.
 
-Вот пример:
+Here is an example:
 
 ![Blocks-coalescing](misc/images/Blocks-coalescing.png)
 
-### Описание функций
+### Function description
 
-| № | Функция | Описание |
+| № | Function | Description |
 | ------ | ----------------------------------------------------- | ------ |
-| 1 | `void *malloc (size_t size)` | Функция `malloc` выделяет блок памяти, размером `size` байт, и возвращает указатель на начало блока. Содержание выделенного блока памяти не инициализируется, оно остается с неопределенными значениями. При неудаче возвращает указатель null. |
-| 2 | `void *calloc (size_t num, size_t size)` | Функция `calloc` выделяет блок памяти для массива размером — `num` элементов, каждый из которых занимает `size` байт, и инициализирует все свои биты в нулями. В результате выделяется блок памяти размером `num * size` байт, причём весь блок заполнен нулями. Возвращает указатель на начало блока, при неудаче указатель на null. |
-| 3 | `void *realloc(void *ptr, size_t size)` | Функция `realloc` выполняет перераспределение блоков памяти. Размер блока памяти, на который ссылается параметр `ptr` изменяется на `size` байтов. Блок памяти может уменьшаться или увеличиваться в размере. Эта функция может перемещать блок памяти на новое место, в этом случае функция возвращает указатель на новое место в памяти. Содержание блока памяти сохраняется даже если новый блок имеет меньший размер, чем старый. Отбрасываются только те данные, которые не вместились в новый блок.  Если новое значение `size` больше старого, то содержимое вновь выделенной памяти будет неопределенным. Возвращает указатель на начало блока, при этом исходный указатель `ptr` становится недействительным, и любой доступ к нему является неопределенным поведением. В случае ошибки возвращает нулевой указатель, а исходный указатель `ptr` остается действительным. |
-| 4 | `void free (void* ptr)` | Функция `free` освобождает место в памяти. Блок памяти, ранее выделенный с помощью вызова `malloc`, `calloc` или `realloc` освобождается. То есть освобожденная память может дальше  использоваться программами или ОС. Обратите внимание, что эта функция оставляет значение `ptr` неизменным, следовательно, он по-прежнему указывает на тот же блок памяти, а не на нулевой указатель. |
+| 1 | `void *malloc (size_t size)` | The `malloc` function allocates a `size` byte memory block and returns a pointer to the beginning of the block. The contents of the allocated memory block are not initialized; they remain with undefined values. If it fails, it returns a null pointer. | 
+| 2 | `void *calloc (size_t num, size_t size)` | The `calloc` function allocates a block of memory to an array of `num` elements, where each element is of `size` bytes, and initializes all its bits with zeros. As a result, a block of `num * size` bytes is allocated, and the whole block is filled with zeros. It returns a pointer to the beginning of the block; if it fails, it returns a null pointer. |
+| 3 | `void *realloc(void *ptr, size_t size)` | The `realloc` function reallocates memory blocks. The size of the memory block pointed to by the `ptr` is changed to `size` bytes. A memory block can decrease or increase in size. This function can move the memory block to a new location, in which case the function returns a pointer to the new memory location. The contents of the memory block are maintained even if the new block is smaller than the old one. Only the data that does not fit into the new block is discarded. If the new `size` value is larger than the old one, the contents of the newly allocated memory will be undefined. Returns a pointer to the beginning of the block, with the original `ptr` pointer becoming invalid and any access to it being undefined behavior. In case of an error it returns a null pointer and the original `ptr` pointer remains valid. |
+| 4 | `void free (void* ptr)` | The `free` function frees the memory space. A block of memory previously allocated by calling `malloc`, `calloc` or `realloc` is released. That means that the freed memory can be further used by programs or the OS. Note that this function leaves the value of `ptr` unchanged, so it still points to the same memory block and not to a null pointer. |
+### Explicit free-list
 
-### Список свободных ячеек
-
-Самым простым способом нахождения свободных ячеек является линейный поиск, т.е. анализ каждого блока, одного за другим. 
-Более эффективным алгоритмом было бы использование списка, который связывает только свободные блоки.
+The easiest way to find free cells is a linear search, i.e. the analysis of each block, one by one.
+A more efficient algorithm would be using an explicit free-list, which links only free blocks.
 
 ![Explicit-free-list](misc/images/Explicit-free-list.png)
 
-Это может привести к значительному повышению производительности, когда куча становится все больше, и в базовых алгоритмах требуется обойти множество объектов.
+This might be a significant performance improvement, when the heap is getting larger, and one needs to traverse a lot of objects in the basic algorithms.
 
-Такой список может быть реализован непосредственно в заголовке объекта. Для этого указатели `next` и `prev` будут указывать на свободные блоки.
-Процедуры разделения и объединения должны быть соответствующим образом обновлены, поскольку `next` и `prev` больше не будут указывать на соседние блоки.
+Such a list can be implemented directly in the object header. For this the `next`, and `prev` pointers would point to the free blocks. Procedures of splitting and coalescing should be updated accordingly, since `next`, and `prev` won’t be pointing to adjacent blocks anymore. 
+Alternatively, you can create a separate additional free-list.
 
-В качестве альтернативы можно создать отдельный дополнительный список свободных блоков.
+### Fragmentation
 
-### Фрагментация
+Fragmentation happens when free blocks in the heap are not on adjacent positions.
+In this situation, it will not be possible to allocate more memory than the size of each of the free blocks, even if their total size is sufficient.
 
-Фрагментация возникает, когда свободные блоки в куче находятся не на соседних позициях. 
-В такой ситуации не удастся выделить больше памяти, чем размер каждого из свободных блоков, даже если их суммарного объема достаточно.
-
-Дефрагментация заключается в перераспределении блоков в куче, в результате которого данные перезаписывается в непрерывной области.
-За счет этого все свободные блоки объединяются в один, размер которого равен сумме их размеров.
-
+Defragmentation is reallocation of blocks in the heap, as a result of which data is overwritten in a continuous area.
+In this way all free blocks are merged into one, the size of which is equal to the sum of their sizes. 
 
 ## Chapter III
 
-## Part 1. Реализация библиотеки s21_memory
+## Part 1. Implementation of the s21_memory library
 
-Необходимо реализовать функции библиотеки stdlib.h, описанные [выше](#описание-функций):
-- Программа должна быть разработана на языке C++ стандарта C++17
-- Код программы должен находиться в папке src
-- Не использовать устаревшие и выведенные из употребления конструкции языка и библиотеки
-- Оформить решение как статическую библиотеку (с заголовочным файлом s21_memory.h)
-- Перед каждой функцией использовать префикс s21_
-- Запрещено копирование реализации стандартной библиотеки
-- Предусмотреть Makefile для сборки библиотеки (с целями all, clean, s21_memory.a)
-- При реализации функций учитывать выравнивание памяти, разделение и объединение блоков, а также возможные ошибочные ситуации
-- Ваши функции должны работать не с системной памятью, а выделенной под кучу в самой программе. Для этого в программе создаётся динамический массив, память под который выделяется стандартной функцией `malloc`.
-- Должен быть реализован консольный интерфейс, который предоставляет пользователю следующие опции:
-  - Инициализация кучи размером _N_ байт (при этом текущая куча, если она есть, освобождается)
-  - Вызов функций `s21_malloc`, `s21_calloc`, `s21_realloc`, `s21_free` с соответствующими параметрами (при этом отображать адреса, возвращаемые функциями)
-  - Запись значения по указанному пользователем адресу. При этом пользователем указывается:
-    - Адрес, по которому нужно записать значение
-    - Тип данных (Рассматриваются только `int`, `double` и `char`)
-    - Является ли записываемое значение массивом
-    - Само значение (в случае массива его длина и элементы)
-    - *Чтобы записанное значение можно было вывести на экран, в блоке памяти, в который идёт запись, создать поле, содержащее тип данных текущего значения. В ячейках, у которых тип ещё ни разу не указывался, считать его массивом `char`*
-  - Вывод текущего состояния кучи (адрес, содержимое, размер и состояние (свободен или занят) каждого блока). Формат вывода информации:
+You need to implement the functions of the stdlib.h library described [above](#function-description):
+- The program must be developed in C++ language of C++17 standard 
+- The program code must be located in the src folder
+- Do not use outdated language constructs and libraries
+- Use the prefix s21_ for each function
+- Make it as a static library (with a s21_memory.h header file)
+- Copying the implementation of the standard library is forbidden
+- Provide a Makefile for building the library and tests (with targets all, clean, tests, s21_memory.a)
+- Take into account memory alignment, block splitting and coalescing, and possible error situations when implementing functions
+- Your functions must not work with the system memory, but with the memory allocated to the heap in the program itself. For this purpose, a dynamic array is created in the program, the memory for which is allocated by the standard function `malloc`.
+- A console interface must be implemented that allows the user to:
+    - Initialize a heap of size _N_ bytes (the current heap, if there is one, is freed)
+    - Call functions `s21_malloc`, `s21_calloc`, `s21_realloc`, `s21_free` with corresponding parameters (displaying the addresses returned by the functions)
+    - Write the value in the address specified by the user. In this case the user specifies:
+        - Address for writing the value
+        - Data type (Only `int`, `double` and `char` are considered)
+        - If the value is an array
+        - The value itself (in the case of an array, its length and elements)
+        - *To be able to display the written value on the screen, create a field in the memory block into which you are writing. That field should contain the data type of the current value.  In cells where type hasn’t yet been specified, consider it as `char` array*
+    - Output the current state of the heap (address, contents, size and state (free or occupied) of each block).
+Output format:
 ```
 0x2f7b1a0
-    Content: [15, 25, -401]
-    Size: 16
-    State: 1
+    Content: [15, 25, -401]
+    Size: 16
+    State: 1
 0x2f7b1b0
-    Content: 4.44
-    Size: 8
-    State: 0
+    Content: 4.44
+    Size: 8
+    State: 0
 0x2f7b1b8
-    Content: [-1024, 127]
-    Size: 8
-    State: 1
+    Content: [-1024, 127]
+    Size: 8
+    State: 1
 0x2f7b1c0
-    Content: ['a', 'a', 'a', 'b', 'a', 'a', 'a', 'o', 'o', 'a', 'a', 'a', 'b', 'a', 'a', 'a']
-    Size: 16
-    State: 0
+    Content: ['a', 'a', 'a', 'b', 'a', 'a', 'a', 'o', 'o', 'a', 'a', 'a', 'b', 'a', 'a', 'a']
+    Size: 16
+    State: 0
 ```
+ 
+## Part 2. Bonus. Search by free cells
 
-## Part 2. Дополнительно. Поиск по свободным ячейкам
-
-Необходимо написать функции `s21_malloc_onlyfree`, `s21_calloc_onlyfree`, `s21_realloc_onlyfree`, `s21_free_onlyfree`, в которых поиск подходящего блока происходит только по свободным блокам. 
-Добавить в интерфейс опцию исследования оптимизации поиска свободных блоков:
-1. Для исследования выделяется 2 кучи размером 1 000 000 байт
-2. Все вызовы функций `s21_malloc` и `s21_malloc_onlyfree` происходят с параметром 10 байт
-3. Вызвать функцию `s21_malloc` для первой кучи 100 000 раз, т.е. куча должна полностью состоять из занятых блоков
-4. Вызвать функцию `s21_malloc_onlyfree` для 2-ой кучи 100 000 раз, т.е. куча должна полностью состоять из занятых блоков
-5. Пользователем задаётся количество (в процентах) свободных блоков в куче
-6. В обеих кучах освобождаются случайные ячейки так, чтобы количество свободных стало равно заданному пользователем
-7. Измерить время, которое потребуется, чтобы снова полностью заполнить первую кучу занятыми блоками с помощью последовательных вызовов функции `s21_malloc`
-8. Измерить время, которое потребуется, чтобы снова полностью заполнить вторую кучу занятыми блоками с помощью последовательных вызовов функции `s21_malloc_onlyfree`
-9. Отобразить на экране полученные времена
-
-## Part 3. Дополнительно. Дефрагментация
-
-Написать функцию `s21_defragmentation`, которая выполняет дефрагментацию текущей кучи:
-- Добавить пользователю возможность вызова этой функции
+You need to write functions `s21_malloc_onlyfree`, `s21_calloc_onlyfree`, `s21_realloc_onlyfree`, `s21_free_onlyfree` that search for a suitable block only by free blocks.
+Add to the interface a research option to optimize the search for free blocks:
+1. Two heaps of 1,000,000 bytes are allocated for the research
+2. All calls of `s21_malloc` and `s21_malloc_onlyfree` functions occur with a parameter of 10 bytes
+3. Call the `s21_malloc` function for the first heap 100,000 times, i.e. the heap should consist entirely of occupied blocks.
+4. Call the `s21_malloc_onlyfree` function for the 2nd heap 100,000 times, i.e. the heap should consist entirely of occupied blocks
+5. The user sets the number (in percent) of free blocks in the heap
+6. In both heaps, random cells are freed so that the number of free cells becomes equal to the user-specified one
+7. Measure the time it takes to fill the first heap completely with occupied blocks again by successive calls of the `s21_malloc` function
+8. Measure the time it takes to fill the second heap completely with occupied blocks again with successive calls of the `s21_malloc_onlyfree` function
+9. Display the results on the screen
+ 
+## Part 3. Bonus. Defragmentation
+ 
+Write a `s21_defragmentation` function that defragments the current heap:
+- Add the ability for the user to call this function
