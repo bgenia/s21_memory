@@ -12,11 +12,13 @@ The russian version of the task can be found in the repository.
 2. [Chapter II](#chapter-ii) \
     2.1. [Information](#information)
 3. [Chapter III](#chapter-iii) \
-    3.1. [Part 1](#part-1-implementation of the s21_memory-library) \
-    3.2. [Part 2](#part-2-bonus-search-by- free-cells) \
+    3.1. [Part 1](#part-1-implementation-of-the-s21_memory-library) \
+    3.2. [Part 2](#part-2-bonus-search-by-free-cells) \
     3.3. [Part 3](#part-3-bonus-defragmentation) 
 
-## Chapter I
+## Chapter I  
+
+![s21_memory](misc/images/s21_memory_eng.JPG)
 
 There was only one thing left to do before being promoted to the position of a Middle Developer: to implement a small project that replicated the behavior of the standard memory library in the C language, so dearly loved by Eve. When Bob gave her the task, she couldn't believe her luck. She was familiar with malloc and free implementations since reading Kernighan and Ritchie's book. So no wonder Eve immediately rushed to her desk, even though she had plenty of time to do the task.
 
@@ -123,6 +125,7 @@ In this way all free blocks are merged into one, the size of which is equal to t
 You need to implement the functions of the stdlib.h library described [above](#function-description):
 - The program must be developed in C++ language of C++17 standard 
 - The program code must be located in the src folder
+- When writing code it is necessary to follow the Google style
 - Do not use outdated language constructs and libraries
 - Use the prefix s21_ for each function
 - Make it as a static library (with a s21_memory.h header file)
