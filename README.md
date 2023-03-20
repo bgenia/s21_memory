@@ -182,4 +182,4 @@ Add to the interface a research option to optimize the search for free blocks:
 Write a `s21_defragmentation` function that defragments the current heap:
 - Add the ability for the user to call this function
 
-💡 [Tap here](https://forms.yandex.ru/u/635aae8beb61461bfd7defae/) **to leave your feedback on the project**. Pedago Team really tries to make your educational experience better.
+💡 [Tap here](https://forms.yandex.ru/cloud/64181f0dc09c02252de7a4fe/) **to leave your feedback on the project**. Pedago Team really tries to make your educational experience better.
