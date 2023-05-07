@@ -1,6 +1,6 @@
 # s21_memory
 
-Developing an implementation of the memory management library.  
+Developing an implementation of the memory management library.
 
 The russian version of the task can be found in the repository.
 
@@ -16,7 +16,7 @@ The russian version of the task can be found in the repository.
     3.2. [Part 2](#part-2-bonus-search-by-free-cells) \
     3.3. [Part 3](#part-3-bonus-defragmentation) 
 
-## Chapter I  
+## Chapter I
 
 ![s21_memory](misc/images/s21_memory_eng.JPG)
 
@@ -107,7 +107,7 @@ A more efficient algorithm would be using an explicit free-list, which links onl
 
 This might be a significant performance improvement, when the heap is getting larger, and one needs to traverse a lot of objects in the basic algorithms.
 
-Such a list can be implemented directly in the object header. For this the `next`, and `prev` pointers would point to the free blocks. Procedures of splitting and coalescing should be updated accordingly, since `next`, and `prev` won’t be pointing to adjacent blocks anymore. 
+Such a list can be implemented directly in the object header. For this the `next`, and `prev` pointers would point to the free blocks. Procedures of splitting and coalescing should be updated accordingly, since `next`, and `prev` won’t be pointing to adjacent blocks anymore.
 Alternatively, you can create a separate additional free-list.
 
 ### Fragmentation
@@ -116,7 +116,7 @@ Fragmentation happens when free blocks in the heap are not on adjacent positions
 In this situation, it will not be possible to allocate more memory than the size of each of the free blocks, even if their total size is sufficient.
 
 Defragmentation is reallocation of blocks in the heap, as a result of which data is overwritten in a continuous area.
-In this way all free blocks are merged into one, the size of which is equal to the sum of their sizes. 
+In this way all free blocks are merged into one, the size of which is equal to the sum of their sizes.
 
 ## Chapter III
 
