@@ -23,58 +23,62 @@ std::unordered_map<std::string, s21::memory::block_type> type_names = {
     {"double", s21::memory::block_type::double_t},
 };
 
+auto print_block_info(s21::memory::block_header* block) {
+  void* data_address = s21::memory::data_of(block);
+
+  std::cout << "[ " << std::hex << data_address << " ]:\n"
+            << "\ttype: " << (int)block->type << "\n"
+            << "\tsize: " << std::dec << block->size << "\n";
+
+  if (block->type == s21::memory::block_type::free) {
+    return;
+  }
+
+  auto element_size = type_sizes[block->type];
+
+  auto start = s21::memory::data_of(block);
+  auto end = start + block->size;
+
+  auto length = (end - start) / element_size;
+
+  std::cout << "\tcontent: [" << std::dec << length << "] { ";
+
+  for (auto i = start; i < end; i += element_size) {
+    switch (block->type) {
+      case s21::memory::block_type::char_t: {
+        auto value = reinterpret_cast<char*>(i);
+
+        std::cout << "'" << *value << "' ";
+
+        break;
+      }
+      case s21::memory::block_type::int_t: {
+        auto value = reinterpret_cast<int*>(i);
+
+        std::cout << *value << " ";
+
+        break;
+      }
+      case s21::memory::block_type::double_t: {
+        auto value = reinterpret_cast<double*>(i);
+
+        std::cout << *value << " ";
+
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  std::cout << "}\n";
+}
+
 auto print_memory_layout(s21::memory::allocator& allocator) {
   std::cout << "heap layout [" << std::dec << allocator.size() << "]:\n";
 
   for (auto& block : allocator.blocks()) {
-    void* data_address = s21::memory::data_of(block);
-
-    std::cout << "[ " << std::hex << data_address << " ]:\n"
-              << "\ttype: " << (int)block->type << "\n"
-              << "\tsize: " << std::dec << block->size << "\n";
-
-    if (block->type == s21::memory::block_type::free) {
-      continue;
-    }
-
-    auto element_size = type_sizes[block->type];
-
-    auto start = s21::memory::data_of(block);
-    auto end = start + block->size;
-
-    auto length = (end - start) / element_size;
-
-    std::cout << "\tcontent: [" << std::dec << length << "] { ";
-
-    for (auto i = start; i < end; i += element_size) {
-      switch (block->type) {
-        case s21::memory::block_type::char_t: {
-          auto value = reinterpret_cast<char*>(i);
-
-          std::cout << "'" << *value << "' ";
-
-          break;
-        }
-        case s21::memory::block_type::int_t: {
-          auto value = reinterpret_cast<int*>(i);
-
-          std::cout << *value << " ";
-
-          break;
-        }
-        case s21::memory::block_type::double_t: {
-          auto value = reinterpret_cast<double*>(i);
-
-          std::cout << *value << " ";
-
-          break;
-        }
-        default:
-          break;
-      }
-    }
-
-    std::cout << "}\n";
+    print_block_info(block);
   }
 
   std::cout << std::dec << std::endl;
@@ -85,6 +89,7 @@ auto handle_help(std::istringstream&) {
       << "available commands:\n"
          "\tset_heap <size> - allocates a new heap with the specified size\n"
          "\theap - displays current heap layout\n"
+         "\tblock <address> - displays info about the specified memory block\n"
          "\tmalloc <size> - calls s21_malloc for current heap\n"
          "\tcalloc <n> <size> - calls s21_calloc for current heap\n"
          "\trealloc <address> <size> - calls s21_realloc for current heap\n"
@@ -116,6 +121,14 @@ auto handle_heap(std::istringstream&) {
   }
 
   print_memory_layout(*s21::memory::internal::default_allocator);
+}
+
+auto handle_block(std::istringstream& argv) {
+  void* address;
+
+  argv >> address;
+
+  print_block_info(s21::memory::header_of(address));
 }
 
 auto handle_malloc(std::istringstream& argv) {
@@ -241,7 +254,7 @@ auto handle_set(std::istringstream& argv) {
   std::cout << "invalid operation mode, use = or []" << std::endl;
 }
 
-void cli() {
+auto cli() -> void {
   std::cout << "s21_memory repl :: use 'help' for more info\n" << std::endl;
 
   while (true) {
@@ -268,6 +281,8 @@ void cli() {
       handle_set_heap(argv);
     } else if (command == "heap") {
       handle_heap(argv);
+    } else if (command == "block") {
+      handle_block(argv);
     } else if (command == "malloc") {
       handle_malloc(argv);
     } else if (command == "calloc") {
@@ -284,7 +299,7 @@ void cli() {
   }
 }
 
-int main() {
+auto main() -> int {
   try {
     cli();
   } catch (std::exception& e) {
