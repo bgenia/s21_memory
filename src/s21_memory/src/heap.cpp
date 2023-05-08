@@ -5,7 +5,7 @@
 
 namespace s21::memory {
 
-heap::heap(std::size_t size) : size_(size), data_(nullptr) {
+heap::heap(std::size_t size) : size_(size), data_(nullptr, std::free) {
   auto data = std::malloc(size);
 
   if (!data) {

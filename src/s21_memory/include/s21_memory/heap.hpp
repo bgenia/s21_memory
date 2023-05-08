@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 
 #include "s21_memory/block.hpp"
@@ -18,7 +19,7 @@ class heap {
  private:
   std::size_t size_;
 
-  std::unique_ptr<raw_byte[]> data_;
+  std::unique_ptr<raw_byte[], std::function<void(raw_ptr)>> data_;
 };
 
 }  // namespace s21::memory
