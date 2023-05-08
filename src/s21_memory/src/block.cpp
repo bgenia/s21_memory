@@ -2,7 +2,7 @@
 
 namespace s21::memory {
 
-auto header_of(raw_ptr data) -> block_header* {
+auto header_of(void* data) -> block_header* {
   return reinterpret_cast<block_header*>(data) - 1;
 }
 

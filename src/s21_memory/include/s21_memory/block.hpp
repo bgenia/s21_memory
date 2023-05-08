@@ -28,7 +28,7 @@ constexpr auto block_size_of(std::size_t n) {
   return align_of(n) + sizeof(block_header);
 }
 
-auto header_of(raw_ptr data) -> block_header*;
+auto header_of(void* data) -> block_header*;
 
 auto data_of(block_header* header) -> raw_ptr;
 
