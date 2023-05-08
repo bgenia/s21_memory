@@ -27,7 +27,7 @@ auto print_block_info(s21::memory::block_header* block) {
   void* data_address = s21::memory::data_of(block);
 
   std::cout << "[ " << std::hex << data_address << " ]:\n"
-            << "\ttype: " << (int)block->type << "\n"
+            << "\ttype: " << static_cast<int>(block->type) << "\n"
             << "\tsize: " << std::dec << block->size << "\n";
 
   if (block->type == s21::memory::block_type::free) {
