@@ -79,6 +79,10 @@ auto realloc(void* block, std::size_t size) -> void* {
 }
 
 auto free(void* block) -> void {
+  if (!block) {
+    return;
+  }
+
   if (!memory::internal::default_allocator) {
     set_heap(S21_MEMORY_DEFAULT_HEAP_SIZE);
   }

@@ -135,6 +135,10 @@ auto allocator::reallocate_block(block_header* block, std::size_t size)
 }
 
 auto allocator::free_block(block_header* block) -> void {
+  if (!block) {
+    return;
+  }
+
   block->type = block_type::free;
 }
 
