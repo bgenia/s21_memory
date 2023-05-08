@@ -10,9 +10,8 @@
 namespace s21::memory {
 
 allocator::allocator(std::size_t heap_size)
-    : heap_(heap_size),
-      root_(new (heap_.data()) block_header(
-          block_type::free, heap_size - sizeof(block_header))) {}
+    : heap_(sizeof(block_header) + heap_size),
+      root_(new (heap_.data()) block_header(block_type::free, heap_size)) {}
 
 auto allocator::merge_free_blocks() -> void {
   auto current = root_;
