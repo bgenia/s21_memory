@@ -19,8 +19,4 @@ auto heap::data() const -> raw_ptr { return data_.get(); }
 
 auto heap::size() const -> std::size_t { return size_; }
 
-auto heap::resolve_pointer(local_ptr pointer) const -> raw_ptr {
-  return data() + pointer;
-}
-
 }  // namespace s21::memory

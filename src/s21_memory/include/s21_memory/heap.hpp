@@ -7,8 +7,6 @@
 
 namespace s21::memory {
 
-using local_ptr = std::size_t;
-
 class heap {
  public:
   heap(std::size_t size);
@@ -16,8 +14,6 @@ class heap {
   auto data() const -> raw_ptr;
 
   auto size() const -> std::size_t;
-
-  auto resolve_pointer(local_ptr pointer) const -> raw_ptr;
 
  private:
   std::size_t size_;
