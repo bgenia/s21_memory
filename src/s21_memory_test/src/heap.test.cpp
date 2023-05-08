@@ -5,7 +5,6 @@
 
 #include "s21_memory/block.hpp"
 
-using namespace std::string_literals;
 using namespace testing;
 
 TEST(heap_constructor, should_allocate_exact_size) {

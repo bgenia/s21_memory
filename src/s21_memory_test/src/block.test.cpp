@@ -5,7 +5,6 @@
 
 #include <string>
 
-using namespace std::string_literals;
 using namespace testing;
 
 TEST(align_of, zero_should_remain_zero) {

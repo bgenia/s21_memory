@@ -8,7 +8,6 @@
 
 #include "s21_memory/block.hpp"
 
-using namespace std::string_literals;
 using namespace testing;
 
 TEST(allocator_constructor,
