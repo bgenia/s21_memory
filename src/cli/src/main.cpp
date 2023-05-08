@@ -27,10 +27,11 @@ auto print_memory_layout(s21::memory::allocator& allocator) {
   std::cout << "heap layout [" << std::dec << allocator.size() << "]:\n";
 
   for (auto& block : allocator.blocks()) {
-    std::cout << "[" << std::hex << block << "]:\n"
+    void* data_address = s21::memory::data_of(block);
+
+    std::cout << "[ " << std::hex << data_address << " ]:\n"
               << "\ttype: " << (int)block->type << "\n"
-              << "\tsize: " << std::dec << block->size << "\n"
-              << "\tnext: " << std::hex << block->next << "\n";
+              << "\tsize: " << std::dec << block->size << "\n";
 
     if (block->type == s21::memory::block_type::free) {
       continue;
