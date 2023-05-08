@@ -48,7 +48,7 @@ auto calloc(std::size_t n, std::size_t size) -> void* {
 
   std::size_t size_;
 
-  if (!__builtin_mul_overflow(n, size, &size_)) {
+  if (__builtin_mul_overflow(n, size, &size_)) {
     return nullptr;
   }
 
