@@ -72,6 +72,12 @@ auto allocator::allocate_block(std::size_t size, block_type type)
 
 auto allocator::shrink_block(block_header* block, std::size_t size)
     -> block_header* {
+  auto size_difference = block->size - size;
+
+  if (size_difference < block_size_of(0)) {
+    return block;
+  }
+
   auto next_block = split_block(block, size);
 
   free_block(next_block);
