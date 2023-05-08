@@ -67,6 +67,10 @@ else ifneq ($(or $(findstring release,$(MODIFIERS)),$(if $(MAKECMDGOALS),,releas
 	CPPFLAGS += -DNDEBUG
 endif
 
+ifneq ($(findstring build_only,$(MODIFIERS)),)
+  BUILD_ONLY = 1
+endif
+
 .PHONY: $(RAW_MODIFIERS)
 
 ifeq ($(filter-out $(RAW_MODIFIERS),$(MAKECMDGOALS)),)
@@ -108,7 +112,9 @@ $(TEST_EXECUTABLES): export LDFLAGS = $(addprefix -L$(PROJECT_ROOT)/$(BINARY_DIR
 $(TEST_EXECUTABLES):
 >	$(MAKE) $(LIBRARIES) @coverage
 >	$(MAKE) -C $(SOURCE_DIRECTORY)/$@
+ifndef BUILD_ONLY
 >	$(BINARY_ROOT)/$@/$@
+endif
 
 .PHONY: .test
 .test: $(TEST_EXECUTABLES)
