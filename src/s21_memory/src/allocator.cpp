@@ -10,7 +10,7 @@
 namespace s21::memory {
 
 allocator::allocator(std::size_t heap_size)
-    : heap_(sizeof(block_header) + heap_size),
+    : heap_(block_size_of(heap_size)),
       root_(new (heap_.data()) block_header(block_type::free, heap_size)) {}
 
 auto allocator::merge_free_blocks() -> void {
@@ -25,7 +25,7 @@ auto allocator::merge_free_blocks() -> void {
       continue;
     }
 
-    current->size += next->size + sizeof(block_header);
+    current->size += block_size_of(next->size);
     current->next = next->next;
 
     next = current->next;
@@ -35,7 +35,7 @@ auto allocator::merge_free_blocks() -> void {
 auto allocator::split_block(block_header* block, std::size_t size)
     -> block_header* {
   auto next_block = new (data_of(block) + size)
-      block_header(block_type::free, block->size - size - sizeof(block_header));
+      block_header(block_type::free, block->size - block_size_of(size));
 
   next_block->next = block->next;
 
@@ -58,7 +58,7 @@ auto allocator::allocate_block(std::size_t size, block_type type)
       continue;
     }
 
-    if (block->size > aligned_size + sizeof(block_header)) {
+    if (block->size > block_size_of(aligned_size)) {
       split_block(block, aligned_size);
     }
 
@@ -86,13 +86,13 @@ auto allocator::expand_block(block_header* block, std::size_t size)
   auto next_block = block->next;
 
   if (next_block && next_block->type == block_type::free) {
-    auto next_size = block->size + next_block->size + sizeof(block_header);
+    auto next_size = block->size + block_size_of(next_block->size);
 
     if (next_size >= size) {
       block->next = next_block->next;
       block->size = next_size;
 
-      if (block->size > size + sizeof(block_header)) {
+      if (block->size > block_size_of(size)) {
         split_block(block, size);
       }
 

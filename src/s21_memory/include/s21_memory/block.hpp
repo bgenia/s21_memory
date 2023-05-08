@@ -24,9 +24,7 @@ struct alignas(word_size) block_header {
   block_header(block_type type, std::size_t size) : type(type), size(size) {}
 };
 
-constexpr auto block_size_of(std::size_t n) {
-  return align_of(n) + sizeof(block_header);
-}
+constexpr auto block_size_of(std::size_t n) { return n + sizeof(block_header); }
 
 auto header_of(void* data) -> block_header*;
 
