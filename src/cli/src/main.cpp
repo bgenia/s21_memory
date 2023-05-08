@@ -94,6 +94,7 @@ auto handle_help(std::istringstream&) {
          "\tcalloc <n> <size> - calls s21_calloc for current heap\n"
          "\trealloc <address> <size> - calls s21_realloc for current heap\n"
          "\tfree <address> - calls s21_free for current heap\n"
+         "\tmerge_free - merges adjacent free blocks\n"
          "\tset <address> <type> = <value> - assigns a single value by the "
          "specified address\n"
          "\tset <address> <type> [] <length> [values...] - assigns an array of "
@@ -171,6 +172,17 @@ auto handle_free(std::istringstream& argv) {
   s21_free(address);
 
   std::cout << "ok " << std::hex << address << std::endl;
+}
+
+auto handle_merge_free(std::istringstream&) {
+  if (!s21::memory::internal::default_allocator) {
+    std::cout << "no heap currrently allocated" << std::endl;
+    return;
+  }
+
+  s21::memory::internal::default_allocator->merge_free_blocks();
+
+  std::cout << "ok" << std::endl;
 }
 
 auto set_value(void* address, std::string_view type, std::istringstream& argv) {
@@ -291,6 +303,8 @@ auto cli() -> void {
       handle_realloc(argv);
     } else if (command == "free") {
       handle_free(argv);
+    } else if (command == "merge_free") {
+      handle_merge_free(argv);
     } else if (command == "set") {
       handle_set(argv);
     } else {
