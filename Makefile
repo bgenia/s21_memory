@@ -32,13 +32,13 @@ export LDFLAGS = $(addprefix -L$(BINARY_ROOT)/,$(LIBRARIES))
 
 # Projects
 
-s21_memory_cli: s21_memory
+cli: s21_memory
 
 TARGETS = $(LIBRARIES) $(EXECUTABLES)
 
 LIBRARIES = s21_memory
 
-EXECUTABLES = s21_memory_cli
+EXECUTABLES = cli
 
 TEST_EXECUTABLES = s21_memory_test
 
