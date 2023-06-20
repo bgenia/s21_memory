@@ -10,8 +10,6 @@ workspace "A5_s21_memory"
   location "src"
 
   filter "release"
-
-  filter "release"
     defines { "NDEBUG" }
     optimize "On"
 
@@ -43,6 +41,13 @@ workspace "A5_s21_memory"
     linkoptions { "--coverage" }
     links { "gcov" }
 
+  filter { "test", "tags:generate-gcov-report" }
+    postbuildcommands {
+      "%{cfg.buildtarget.abspath}",
+      "lcov -c -d %{cfg.objdir}/.. -o %{cfg.buildtarget.directory}/%{cfg.buildtarget.basename}_coverage.info",
+      "genhtml %{cfg.buildtarget.directory}/%{cfg.buildtarget.basename}_coverage.info -o %{cfg.buildtarget.directory}/%{cfg.buildtarget.basename}_coverage_report"
+    }
+
   project "cli"
     kind "ConsoleApp"
 
@@ -68,7 +73,7 @@ workspace "A5_s21_memory"
   project "s21_memory_test"
     kind "ConsoleApp"
 
-    tags { "test", "use-coverage" }
+    tags { "test", "use-coverage", "generate-gcov-report" }
 
     location "%{wks.location}/s21_memory_test"
 
@@ -77,10 +82,4 @@ workspace "A5_s21_memory"
 
     links { "gtest", "gmock" }
     links { "s21_memory" }
-
-    postbuildcommands {
-      "%{cfg.buildtarget.abspath}",
-      "lcov -c -d %{cfg.objdir}/.. -o %{cfg.buildtarget.directory}/%{cfg.buildtarget.basename}_coverage.info",
-      "genhtml %{cfg.buildtarget.directory}/%{cfg.buildtarget.basename}_coverage.info -o %{cfg.buildtarget.directory}/%{cfg.buildtarget.basename}_coverage_report"
-    }
 
